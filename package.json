@@ -1,6 +1,8 @@
 {
   "name": "koa-proxies-router",
   "description": "Fork from koa-proxies and add router config",
+  "version": "1.0.0",
+  "publishConfig": { "registry": "https://registry.npmjs.org/" },
   "keywords": [
     "koa",
     "middleware",
