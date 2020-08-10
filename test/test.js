@@ -167,12 +167,13 @@ describe('tests for koa proxies', () => {
     const proxyMiddleware = proxy('/200', {
       target: 'http://127.0.0.1:12306',
       changeOrigin: true,
-      logs: true,
+      logs: true
     })
 
     server = startServer(3000, proxyMiddleware)
 
     await chai.request(server).get('/200')
+    // eslint-disable-next-line no-unused-expressions
     expect(console.log).to.be.called
     console.log.restore()
   })

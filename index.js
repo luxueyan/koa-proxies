@@ -4,11 +4,12 @@
 const { URL } = require('url')
 const HttpProxy = require('http-proxy')
 const pathMatch = require('path-match')
-
+const router = require('./router')
+const createDebug = require('debug')
 /**
  * Constants
  */
-
+const debug = createDebug('koa-proxy:index')
 const proxy = HttpProxy.createProxyServer()
 const route = pathMatch({
   // path-to-regexp options
@@ -19,10 +20,14 @@ const route = pathMatch({
 
 let eventRegistered = false
 
+function logger (ctx, target) {
+  debug('%s - %s %s proxy to -> %s', new Date().toISOString(), ctx.req.method, ctx.req.oldPath, new URL(ctx.req.url, target))
+}
+
 /**
  * Koa Http Proxy Middleware
  */
-module.exports = (path, options) => (ctx, next) => {
+module.exports = (path, options) => async (ctx, next) => {
   // create a match function
   const match = route(path)
   if (!match(ctx.path)) return next()
@@ -30,14 +35,23 @@ module.exports = (path, options) => (ctx, next) => {
   let opts = Object.assign({}, options)
   if (typeof options === 'function') {
     const params = match(ctx.path)
-    opts = options.call(options, params)
+    opts = options.call(options, ctx, params)
+  }
+
+  // router support
+  if (opts.router) {
+    const newTarget = await router.getTarget(ctx.request, opts)
+    if (newTarget) {
+      debug('[HPM] Router new target: %s -> "%s"', options.target, newTarget)
+      opts.target = newTarget
+    }
   }
   // object-rest-spread is still in stage-3
   // https://github.com/tc39/proposal-object-rest-spread
   const { logs, rewrite, events } = opts
 
   const httpProxyOpts = Object.keys(opts)
-    .filter(n => ['logs', 'rewrite', 'events'].indexOf(n) < 0)
+    .filter((n) => ['logs', 'rewrite', 'events'].indexOf(n) < 0)
     .reduce((prev, cur) => {
       prev[cur] = opts[cur]
       return prev
@@ -70,7 +84,7 @@ module.exports = (path, options) => (ctx, next) => {
       resolve()
     })
 
-    proxy.web(ctx.req, ctx.res, httpProxyOpts, e => {
+    proxy.web(ctx.req, ctx.res, httpProxyOpts, (e) => {
       const status = {
         ECONNREFUSED: 503,
         ETIMEOUT: 504
@@ -82,7 +96,3 @@ module.exports = (path, options) => (ctx, next) => {
 }
 
 module.exports.proxy = proxy
-
-function logger (ctx, target) {
-  console.log('%s - %s %s proxy to -> %s', new Date().toISOString(), ctx.req.method, ctx.req.oldPath, new URL(ctx.req.url, target))
-}

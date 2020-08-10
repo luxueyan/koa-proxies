@@ -1,4 +1,4 @@
-# Koa Proxies
+# Koa Proxies with router config - Forked from [koa-proxies](https://github.com/vagusX/koa-proxies.git) add rewrited!
 
 ![NPM](https://img.shields.io/npm/v/koa-proxies.svg)
 [![TavisCI Build](https://img.shields.io/travis/vagusX/koa-proxies.svg)](https://travis-ci.org/vagusX/koa-proxies)
@@ -9,12 +9,14 @@
 
 > [Koa@2.x/next](https://github.com/koajs/koa) middlware for http proxy
 
-Powered by [`http-proxy`](https://github.com/nodejitsu/node-http-proxy).
+Add router config like [http-proxy-middleware](https://github.com/chimurai/http-proxy-middleware/)
+Powered by [`http-proxies`](https://github.com/vagusX/koa-proxies.git) / [http-proxy-middleware](https://github.com/chimurai/http-proxy-middleware/)
+
 
 ## Installation
 
 ```bash
-$ npm install koa-proxies --save
+$ npm install koa-proxies-router --save
 ```
 
 ## Options
@@ -23,13 +25,14 @@ $ npm install koa-proxies --save
 
 ```js
 options.events = {
-  error (err, req, res) { },
-  proxyReq (proxyReq, req, res) { },
-  proxyRes (proxyRes, req, res) { }
+  error(err, req, res) {},
+  proxyReq(proxyReq, req, res) {},
+  proxyRes(proxyRes, req, res) {}
 }
 ```
 
 ### log option
+
 ```js
 // enable log
 options.logs = true; // or false
@@ -37,7 +40,7 @@ options.logs = true; // or false
 // custom log function
 options.logs = (ctx, target) {
   console.log('%s - %s %s proxy to -> %s', new Date().toISOString(), ctx.req.method, ctx.req.oldPath, new URL(ctx.req.url, target))
-} 
+}
 ```
 
 ## Usage
@@ -52,7 +55,13 @@ const app = new Koa()
 
 // middleware
 app.use(proxy('/octocat', {
-  target: 'https://api.github.com/users',    
+  target: 'https://api.github.com/users',
+  router: (req) {
+    if (req.query._proxy) {
+      return _proxy
+    }
+    return 'https://api.github.com/users',
+  },
   changeOrigin: true,
   agent: new httpsProxyAgent('http://1.2.3.4:88'), // if you need or just delete this line
   rewrite: path => path.replace(/^\/octocat(\/|\/\w+)?$/, '/vagusx'),
