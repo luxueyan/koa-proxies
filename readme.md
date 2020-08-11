@@ -1,4 +1,4 @@
-# Koa Proxies with router config - Forked from [koa-proxies](https://github.com/vagusX/koa-proxies.git) add rewrited!
+# Koa Proxies with router config - Forked from [koa-proxies](https://github.com/vagusX/koa-proxies.git) and rewrited!
 
 ![NPM](https://img.shields.io/npm/v/koa-proxies.svg)
 [![TavisCI Build](https://img.shields.io/travis/vagusX/koa-proxies.svg)](https://travis-ci.org/vagusX/koa-proxies)
@@ -10,7 +10,7 @@
 > [Koa@2.x/next](https://github.com/koajs/koa) middlware for http proxy
 
 Add router config like [http-proxy-middleware](https://github.com/chimurai/http-proxy-middleware/)
-Powered by [`http-proxies`](https://github.com/vagusX/koa-proxies.git) / [http-proxy-middleware](https://github.com/chimurai/http-proxy-middleware/)
+Powered by [`http-proxies`](https://github.com/vagusX/koa-proxies.git) / [`http-proxy-middleware`](https://github.com/chimurai/http-proxy-middleware/)
 
 
 ## Installation
@@ -55,7 +55,7 @@ const app = new Koa()
 
 // middleware
 app.use(proxy('/octocat', {
-  target: 'https://api.github.com/users',
+  target: 'https://api.github.com/users', // if router config exist this will be ignored
   router: (req) {
     if (req.query._proxy) {
       return _proxy
